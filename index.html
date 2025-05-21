@@ -2144,8 +2144,41 @@
           fit: true,
           center: true,
           minZoom: 0.5,
-          maxZoom: 10
+          maxZoom: 10,
+          mouseWheelZoomEnabled: false // initially off
         });
+
+        // Show "Hold Ctrl" tip when user scrolls
+        let scrollHintShown = false;
+        svgElement.addEventListener('wheel', function (e) {
+          if (!e.ctrlKey) {
+            e.preventDefault();
+
+            if (!scrollHintShown) {
+              const hint = document.createElement("div");
+              hint.innerText = "Hold Ctrl + scroll to zoom the map";
+              hint.style.position = "fixed";
+              hint.style.bottom = "20px";
+              hint.style.left = "50%";
+              hint.style.transform = "translateX(-50%)";
+              hint.style.background = "#222";
+              hint.style.color = "#fff";
+              hint.style.padding = "10px 15px";
+              hint.style.borderRadius = "5px";
+              hint.style.zIndex = "9999";
+              hint.style.boxShadow = "0 2px 10px rgba(0,0,0,0.3)";
+              document.body.appendChild(hint);
+
+              setTimeout(() => hint.remove(), 3000);
+              scrollHintShown = true;
+            }
+          } else {
+            // allow zooming if Ctrl is held
+            panZoomInstance.zoomBy(e.deltaY > 0 ? 0.9 : 1.1);
+            e.preventDefault();
+          }
+        }, { passive: false });
+
 
         document.getElementById("zoom-in").onclick = () => panZoomInstance.zoomIn();
         document.getElementById("zoom-out").onclick = () => panZoomInstance.zoomOut();
