@@ -2138,46 +2138,49 @@
     window.onload = function () {
       const svgElement = document.getElementById("lot-map");
       if (svgElement) {
-        panZoomInstance = svgPanZoom(svgElement, {
-          zoomEnabled: true,
-          controlIconsEnabled: false,
-          fit: true,
-          center: true,
-          minZoom: 0.5,
-          maxZoom: 10,
-          mouseWheelZoomEnabled: false // initially off
-        });
+       panZoomInstance = svgPanZoom(svgElement, {
+  zoomEnabled: true,
+  controlIconsEnabled: false,
+  fit: true,
+  center: true,
+  minZoom: 0.5,
+  maxZoom: 10,
+  mouseWheelZoomEnabled: false // we’ll manually handle wheel zooming
+});
 
-        // Show "Hold Ctrl" tip when user scrolls
-        let scrollHintShown = false;
-        svgElement.addEventListener('wheel', function (e) {
-          if (!e.ctrlKey) {
-            e.preventDefault();
+// Show "Hold Ctrl" tip when user scrolls
+let scrollHintShown = false;
 
-            if (!scrollHintShown) {
-              const hint = document.createElement("div");
-              hint.innerText = "Hold Ctrl + scroll to zoom the map";
-              hint.style.position = "fixed";
-              hint.style.bottom = "20px";
-              hint.style.left = "50%";
-              hint.style.transform = "translateX(-50%)";
-              hint.style.background = "#222";
-              hint.style.color = "#fff";
-              hint.style.padding = "10px 15px";
-              hint.style.borderRadius = "5px";
-              hint.style.zIndex = "9999";
-              hint.style.boxShadow = "0 2px 10px rgba(0,0,0,0.3)";
-              document.body.appendChild(hint);
+svgElement.addEventListener('wheel', function (e) {
+  if (e.ctrlKey) {
+    // Zoom only when Ctrl is held
+    e.preventDefault();
+    panZoomInstance.zoomBy(e.deltaY > 0 ? 0.9 : 1.1);
+  } else {
+    // Allow normal page scroll, but show hint only once
+    if (!scrollHintShown) {
+      const hint = document.createElement("div");
+      hint.innerText = "Hold Ctrl + scroll to zoom the map";
+      hint.style.position = "fixed";
+      hint.style.bottom = "20px";
+      hint.style.left = "50%";
+      hint.style.transform = "translateX(-50%)";
+      hint.style.background = "#222";
+      hint.style.color = "#fff";
+      hint.style.padding = "10px 15px";
+      hint.style.borderRadius = "5px";
+      hint.style.zIndex = "9999";
+      hint.style.boxShadow = "0 2px 10px rgba(0,0,0,0.3)";
+      document.body.appendChild(hint);
 
-              setTimeout(() => hint.remove(), 3000);
-              scrollHintShown = true;
-            }
-          } else {
-            // allow zooming if Ctrl is held
-            panZoomInstance.zoomBy(e.deltaY > 0 ? 0.9 : 1.1);
-            e.preventDefault();
-          }
-        }, { passive: false });
+      setTimeout(() => hint.remove(), 3000);
+      scrollHintShown = true;
+    }
+
+    // DO NOT call e.preventDefault() — let the page scroll
+  }
+}, { passive: false });
+
 
 
         document.getElementById("zoom-in").onclick = () => panZoomInstance.zoomIn();
